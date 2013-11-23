@@ -29,3 +29,9 @@ SimpleDash uses the following excellent work from the community:
 - Handlebarsjs for internal templating
 - Wookmark for Pinterest-like layout
 - Highcharts for it's main charting purpose
+
+Limitations
+===========
+
+To use sqlite3 module it is necessary to have pre-compiled node-webkit module for specific platform.
+The repository contains one for Mac OS X - I'll try to add others as I build them.
