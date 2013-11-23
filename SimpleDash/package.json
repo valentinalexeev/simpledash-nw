@@ -1,0 +1,10 @@
+{
+    "main": "index.html",
+    "name": "SimpleDash",
+    "description": "Simple dashboard display",
+    "version": "0.2.0",
+    "window": {
+        "title": "SimpleDash",
+        "toolbar": true
+    }
+}
