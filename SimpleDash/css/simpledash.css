@@ -1,0 +1,9 @@
+#reload {
+    position: absolute;
+    left: 50%;
+    width: 300px;
+    margin-left: -150px;
+    z-index: 1000;
+    top: 0;
+    text-align: center;
+}

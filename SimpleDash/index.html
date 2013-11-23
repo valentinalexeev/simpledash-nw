@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>SimpleDash</title>
+        
+        <script language="JavaScript" src="js/jquery/jquery.js"></script>
+        <script language="JavaScript" src="js/highcharts/highcharts.js"></script>
+        <script language="JavaScript" src="js/wookmark/jquery.wookmark.js"></script>
+        <script language="JavaScript" src="js/handlebars/handlebars.js"></script>
+        
+        <script language="JavaScript" src="js/simpledash/simpledash.js"></script>
+        <script language="JavaScript" src="js/simpledash/simpledash-layouts.js"></script>
+        <script language="JavaScript" src="js/simpledash/simpledash-dataproviders.js"></script>
+        
+        <script language="JavaScript">
+            var sd = new SimpleDash();
+        
+            $(document).ready(function() {
+                sd_registerLayouts();
+                sd_registerDataProviders();
+                
+                sd.go();
+                
+                $("#btnReload").click(function() {
+                    require("nw.gui").Window.get().reload();
+                });
+            });
+        </script>
+        
+        <link rel="stylesheet" type="text/css" href="css/simpledash.css"/>
+    </head>
+    <body>
+        <div id="workspace"></div>
+        <div id="reload"><button id="btnReload">Reload</button></div>
+    </body>
+</html>
