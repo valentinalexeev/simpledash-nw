@@ -4,7 +4,6 @@ function SimpleDash() {
     this.chartWidgets = [];
 
     this.go = function () {
-//        $("#workspace")[0].innerHTML = "<h1>Hello!</h1>";
         // 1. read configuration file
         this.readConfiguration();
         // 2. prepare all chart widget
@@ -43,15 +42,19 @@ function SimpleDash() {
     this.prepareChartWidgets = function () {
         for (var i = 0; i < this.chartConfig.length; i++) {
             var chart = this.chartConfig[i];
+            // 0. fill defaults
+            if (!chart["widget"]["type"]) {
+                chart["widget"]["type"] = "chart";
+            }
             // 1. create placeholder
             var placeholder = [
                 "<div id='chart",
                 i,
-                "' height='",
+                "' style='max-height:",
                 chart["widget"]["height"]
-                ,"' width='",
+                ,"px; max-width:",
                 chart["widget"]["width"]
-                ,"'></div>"].join("");
+                ,"px'></div>"].join("");
             this.chartWidgets[i] = placeholder;
         }
     };
@@ -74,7 +77,9 @@ function SimpleDash() {
                 console.log("Unable to find provider " + chart["widget"]["dataprovider"] + " for chart " + i);
                 continue;
             }
-            $("#workspace #chart" + i).highcharts(this.dataProvider[chart["widget"]["dataprovider"]](i, chart));
+            var config = this.dataProvider[chart["widget"]["dataprovider"]](i, chart);
+
+            this.widgetTypes[chart["widget"]["type"]]($("#workspace #chart" + i), config);
         }
     }
     
@@ -124,4 +129,16 @@ function SimpleDash() {
             }
         }
     };
+
+    /** Dictionary of know widget types. */
+    this.widgetTypes = {};
+
+    /**
+     * Register new widget type.
+     * @param name name of a widget type
+     * @param widgetTypeFunc widget configuration handler
+     */
+    this.registerWidgetType = function (name, widgetTypeFunc) {
+        this.widgetTypes[name] = widgetTypeFunc;    
+    }
 }
