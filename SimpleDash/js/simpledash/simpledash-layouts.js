@@ -24,4 +24,14 @@ function sd_registerLayouts () {
             $("#grid3x2 #cell5").appendTo("#grid3x2 #row1");
         }
     });
+
+    sd.registerLayout("masonry", {
+        "template": "<div id='masonry'>{{#each charts}}<div class='item'>{{{this}}}</div>{{/each}}</div>",
+        "initFunction": function () {
+            $("div#masonry").masonry({
+                itemSelector: ".item",
+                columnWidth: 400 // XXX: make configurable
+            });
+        }
+    });
 };
