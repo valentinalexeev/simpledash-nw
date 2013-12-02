@@ -2,6 +2,7 @@ function sd_registerDataProviders() {
     sd.registerDataProvider("as-is", function (id, config) { return config; });
     sd.registerDataProvider("sqlite3", sd_dp_SQLite3_call);
     sd.registerDataProvider("google-spreadsheet", sd_dp_GoogleSpreadsheet_call);
+    sd.registerDataProvider("jira-issuestatus", sd_dp_JiraIssueStatus_call);
 }
 
 /**
@@ -80,7 +81,7 @@ function SimpleDashGoogleSpreadsheet() {
                             console.log(err);
                         } else {
                             var cats = [];
-                            var chart = $("#chart" + chartId).highcharts()
+                            var chart = $("#chart" + chartId).highcharts();
                             var s = chart.get(series);
                             var yValue;
                             for (var i = 0; i < rows.length; i++) {
@@ -114,5 +115,67 @@ function sd_dp_GoogleSpreadsheet_call (id, config) {
     sd_dp_GoogleSpreadsheet.open(id, config);
     sd_dp_GoogleSpreadsheet.series(id, config);
 
+    return config;
+}
+
+/**
+ * JIRA Issue status chart
+ */
+function SimpleDashJiraIssueStatus() {
+    var ckey = "jira-issuestatus";
+    this.series = function (chartId, config) {
+        // 1. perform JIRA API request
+        var searchRequest = require("url").parse(config[ckey]['baseUrl']);
+
+        for (var s in config[ckey]['series']) {
+            searchRequest.search = require("querystring").stringify({
+                "jql": config[ckey]['series'][s]['jql'],
+                "fields": config[ckey]['series'][s]['fields']
+            });
+            sr = require("url").parse(searchRequest.format());
+            sr.rejectUnauthorized = false;
+            console.log(sr);
+
+            function responseHandler(s, chartId) {
+                return function (res) {
+                    console.log(res.req);
+                    res.on('data', function (d) {
+                        if (!res.xData) { res.xData = "";}
+                        res.xData += d.toString();
+                    });
+                    res.on('end', function () {
+                        // 2. parse response and gather statuses by category
+                        var response = JSON.parse(res.xData.toString());
+                        var statusMap = {};
+                        for (var i = 0; i < response.issues.length; i++) {
+                            var statusName = response.issues[i].fields.status.name;
+                            if (statusMap[statusName] == null) {
+                                statusMap[statusName] = 0;
+                            }
+                            statusMap[statusName]++;
+                        }
+                        // 3. update config
+                        var cats = [];
+                        var chart = $("#chart" + chartId).highcharts();
+                        var series = chart.get(s);
+                        for (var key in statusMap) {
+                            cats.push(key);
+                            series.addPoint({name: key, y: statusMap[key]});
+                        }
+                        chart.xAxis[0].setCategories(cats);
+                    });
+                    res.on('error', function (e) {console.error(e);})
+                }
+            }
+
+            require("https").get(sr, responseHandler(s, chartId));
+        }
+    }
+}
+
+var sd_dp_SimpleDashJiraIssueStatus = new SimpleDashJiraIssueStatus();
+
+function sd_dp_JiraIssueStatus_call(id, config) {
+    sd_dp_SimpleDashJiraIssueStatus.series(id, config);
     return config;
 }
