@@ -6,11 +6,14 @@
         <script language="JavaScript" src="js/jquery/jquery.js"></script>
         <script language="JavaScript" src="js/highcharts/highcharts.js"></script>
         <script language="JavaScript" src="js/wookmark/jquery.wookmark.js"></script>
+        <script language="JavaScript" src="js/masonry/masonry.pkgd.min.js"></script>
         <script language="JavaScript" src="js/handlebars/handlebars.js"></script>
+        <script language="JavaScript" src="js/datatables/jquery.dataTables.js"></script>
         
         <script language="JavaScript" src="js/simpledash/simpledash.js"></script>
         <script language="JavaScript" src="js/simpledash/simpledash-layouts.js"></script>
         <script language="JavaScript" src="js/simpledash/simpledash-dataproviders.js"></script>
+        <script language="JavaScript" src="js/simpledash/simpledash-widgets.js"></script>
         
         <script language="JavaScript">
             var sd = new SimpleDash();
@@ -18,19 +21,24 @@
             $(document).ready(function() {
                 sd_registerLayouts();
                 sd_registerDataProviders();
+                sd_registerWidgetTypes();
                 
                 sd.go();
                 
                 $("#btnReload").click(function() {
                     require("nw.gui").Window.get().reload();
                 });
+                $("#btnFullscreen").click(function() {
+                    require("nw.gui").Window.get().toggleFullscreen();
+                });
             });
         </script>
         
         <link rel="stylesheet" type="text/css" href="css/simpledash.css"/>
+        <link rel="stylesheet" type="text/css" href="css/jquery.dataTables.css"/>
     </head>
     <body>
         <div id="workspace"></div>
-        <div id="reload"><button id="btnReload">Reload</button></div>
+        <div id="reload"><button id="btnReload">Reload</button><button id="btnFullscreen">Fullscreen</button></div>
     </body>
 </html>
