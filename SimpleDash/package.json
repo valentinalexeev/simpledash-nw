@@ -5,6 +5,8 @@
     "version": "0.2.0",
     "window": {
         "title": "SimpleDash",
-        "toolbar": true
+        "toolbar": true,
+        "width": 900,
+        "height": 500
     }
 }
