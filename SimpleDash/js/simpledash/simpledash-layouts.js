@@ -30,7 +30,18 @@ function sd_registerLayouts () {
         "initFunction": function () {
             $("div#masonry").masonry({
                 itemSelector: ".item",
-                columnWidth: 400 // XXX: make configurable
+                columnWidth: 400, // XXX: make configurable
+                gutter: 10
+            });
+        }
+    });
+
+    sd.registerLayout("gridster", {
+        "template": "<div id='gridster'><ul>{{#each charts}}<li>{{{this}}}</li>{{/each}}</ul></div>",
+        "initFunction": function () {
+            $("div#gridster ul").gridster({
+                widget_margins: [10, 10],
+                widget_base_dimensions: [400, 400]
             });
         }
     });
