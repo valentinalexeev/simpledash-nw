@@ -48,7 +48,7 @@ function SimpleDash() {
             }
             // 1. create placeholder
             var placeholder = [
-                "<div id='chart",
+                "<div class='widgetHolder resizable' id='chart",
                 i,
                 "' style='max-height:",
                 chart["widget"]["height"]
@@ -79,7 +79,7 @@ function SimpleDash() {
             }
             var config = this.dataProvider[chart["widget"]["dataprovider"]](i, chart);
 
-            this.widgetTypes[chart["widget"]["type"]]($("#workspace #chart" + i), config);
+            this.widgetTypes[chart["widget"]["type"]].populate($("#workspace #chart" + i), config);
         }
     }
     
@@ -91,6 +91,9 @@ function SimpleDash() {
             alert("Unknown layout: " + this.configObj["layout"]);
         }
         this.layoutTemplates[this.configObj["layout"]]["initFunction"]();
+        if (this.configObj["resizable"]) {
+            $(".resizable").resizable();
+        }
     }
 
     /**
@@ -123,10 +126,7 @@ function SimpleDash() {
     
     this.clearCharts = function () {
         for (var i = 0; i < this.chartConfig.length; i++) {
-            var s = $("#chart" + i).highcharts().series;
-            for (var j = 0; j < s.length; j++) {
-                s[j].setData([]);
-            }
+            this.widgetTypes[this.chartConfig[i]["widget"]["type"]].clear($("#chart" + i), this.chartConfig[i]);
         }
     };
 
@@ -136,9 +136,9 @@ function SimpleDash() {
     /**
      * Register new widget type.
      * @param name name of a widget type
-     * @param widgetTypeFunc widget configuration handler
+     * @param widgetHandler widget configuration handler
      */
-    this.registerWidgetType = function (name, widgetTypeFunc) {
-        this.widgetTypes[name] = widgetTypeFunc;    
+    this.registerWidgetType = function (name, widgetHandler) {
+        this.widgetTypes[name] = widgetHandler;
     }
 }
