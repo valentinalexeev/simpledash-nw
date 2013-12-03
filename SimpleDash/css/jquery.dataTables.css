@@ -6,6 +6,9 @@ table.dataTable {
 	margin: 0 auto;
 	clear: both;
 	width: 100%;
+
+        font-family: "Lucida Grande", "Lucida Sans Unicode", Verdana, Arial, Helvetica, sans-serif;
+        font-size: 12px;
 }
 
 table.dataTable thead th {
@@ -219,3 +222,7 @@ table.dataTable thead td:active {
 	-webkit-overflow-scrolling: touch;
 }
 
+.dataTable_wrapper label {
+        font-family: "Lucida Grande", "Lucida Sans Unicode", Verdana, Arial, Helvetica, sans-serif;
+        font-size: 12px;
+}
