@@ -1,4 +1,51 @@
+function SimpleDashWidget (simpleDash, index, config) {
+    this.simpleDash = simpleDash;
+    this.index = index;
+    this.config = config;
+    this.dataProvider = config["widget"]["dataprovider"];
+    
+    if (!this.config["widget"]["type"]) {
+        this.config["widget"]["type"] = "chart";
+    }
+    this.type = this.config["widget"]["type"];
+    
+    this.data = null;
+    
+    this.getPlaceholder = function () {
+        var placeholder = [
+                "<div class='widgetHolder resizable' id='chart",
+                this.index,
+                "' style='max-height:",
+                this.config["widget"]["height"]
+                ,"px; max-width:",
+                this.config["widget"]["width"]
+                ,"px'></div>"].join("");
+        return placeholder;
+    }
+    
+    this.fetchData = function () {
+        var dp = this.simpleDash.getDataProvider(this.dataProvider);
+        if (!dp) {
+            throw new Error ("Unknown data provider " + this.dataProvider + " for widget " + this.index);
+        }
+        
+        dp.fetchData(this.index, this.config, this, this.dataAvailable);
+    }
+    
+    this.dataAvailable = function (data) {
+        this.data = data;
+        this.populateWidget();
+    }
+    
+    this.populateWidget = function () {
+        var display = this.simpleDash.getWidgetType(this.type);
+        display.populate($("#workspace #chart" + this.index), this.config, this.data);
+    }
+}
+
 function SimpleDash() {
+    this.charts = [];
+
     this.configObj = {};
     this.chartConfig = [];
     this.chartWidgets = [];
@@ -7,9 +54,9 @@ function SimpleDash() {
         // 1. read configuration file
         this.readConfiguration();
         // 2. prepare all chart widget
-        this.prepareChartWidgets();
+        var placeholders = this.prepareChartWidgets();
         // 3. draw
-        this.drawChartWidgets();
+        this.drawChartWidgets(placeholders);
         // 4. populate with data
         this.populateChartWidgets();
         // 5. apply general layout
@@ -33,53 +80,39 @@ function SimpleDash() {
         var configFile = fs.readFileSync("../simpledash-config.json", {encoding: "utf8"});
         
         this.configObj = JSON.parse(configFile);
+        for (var i = 0; i < this.configObj.charts.length; i++) {
+            this.charts.push(new SimpleDashWidget(this, i, this.configObj.charts[i]));
+        }
         this.chartConfig = this.configObj.charts;
     };
     
     /**
-     * Scan configuration, fetch data
+     * Prepare placeholders for each widget.
      */
     this.prepareChartWidgets = function () {
-        for (var i = 0; i < this.chartConfig.length; i++) {
-            var chart = this.chartConfig[i];
-            // 0. fill defaults
-            if (!chart["widget"]["type"]) {
-                chart["widget"]["type"] = "chart";
-            }
+        var chartWidgets = [];
+        for (var i = 0; i < this.charts.length; i++) {
             // 1. create placeholder
-            var placeholder = [
-                "<div class='widgetHolder resizable' id='chart",
-                i,
-                "' style='max-height:",
-                chart["widget"]["height"]
-                ,"px; max-width:",
-                chart["widget"]["width"]
-                ,"px'></div>"].join("");
-            this.chartWidgets[i] = placeholder;
+            chartWidgets.push(this.charts[i].getPlaceholder());
         }
+        return chartWidgets;
     };
     
     /**
      * Draw everything
      */
-    this.drawChartWidgets = function () {
+    this.drawChartWidgets = function (placeholders) {
         var template = this.layoutTemplates[this.configObj["layout"]]["template"];
-        $("#workspace")[0].innerHTML = Handlebars.compile(template)({"charts": this.chartWidgets});
+        $("#workspace")[0].innerHTML = Handlebars.compile(template)({"charts": placeholders});
     };
     
     /**
      * Initialize each chart
      */
     this.populateChartWidgets = function () {
-        for (var i = 0; i < this.chartConfig.length; i++) {
-            var chart = this.chartConfig[i];
-            if (this.dataProvider[chart["widget"]["dataprovider"]] == null) {
-                console.log("Unable to find provider " + chart["widget"]["dataprovider"] + " for chart " + i);
-                continue;
-            }
-            var config = this.dataProvider[chart["widget"]["dataprovider"]](i, chart);
-
-            this.widgetTypes[chart["widget"]["type"]].populate($("#workspace #chart" + i), config);
+        for (var i = 0; i < this.charts.length; i++) {
+            var widget = this.charts[i];
+            widget.fetchData();
         }
     }
     
@@ -118,10 +151,14 @@ function SimpleDash() {
     /**
      * Register data provider.
      * @param name name of a data provider.
-     * @param dataProviderFunc function to process chart data configuration and emit Highchart config object
+     * @param dataProviderObject function to process chart data configuration and emit Highchart config object
      */
-    this.registerDataProvider = function (name, dataProviderFunc) {
-        this.dataProvider[name] = dataProviderFunc;
+    this.registerDataProvider = function (name, dataProviderObject) {
+        this.dataProvider[name] = dataProviderObject;
+    }
+    
+    this.getDataProvider = function (name) {
+        return this.dataProvider[name];
     }
     
     this.clearCharts = function () {
@@ -140,5 +177,9 @@ function SimpleDash() {
      */
     this.registerWidgetType = function (name, widgetHandler) {
         this.widgetTypes[name] = widgetHandler;
+    }
+    
+    this.getWidgetType = function (name) {
+        return this.widgetTypes[name];
     }
 }

@@ -14,6 +14,7 @@
         <script language="JavaScript" src="js/jtable/jquery.jtable.js"></script>
         
         <script language="JavaScript" src="js/simpledash/simpledash.js"></script>
+        <script language="JavaScript" src="js/simpledash/simpledash-model.js"></script>
         <script language="JavaScript" src="js/simpledash/simpledash-layouts.js"></script>
         <script language="JavaScript" src="js/simpledash/simpledash-dataproviders.js"></script>
         <script language="JavaScript" src="js/simpledash/simpledash-widgets.js"></script>
@@ -25,8 +26,11 @@
                 sd_registerLayouts();
                 sd_registerDataProviders();
                 sd_registerWidgetTypes();
-                
-                sd.go();
+                sd.go();                
+
+                $("#btnGo").click(function() {
+                    sd.go();
+                });
                 
                 $("#btnReload").click(function() {
                     require("nw.gui").Window.get().reload();
@@ -49,6 +53,10 @@
     </head>
     <body>
         <div id="workspace"></div>
-        <div id="reload"><button id="btnReload">Reload</button><button id="btnFullscreen">Fullscreen</button></div>
+        <div id="reload">
+            <button id="btnGo">Go</button>
+            <button id="btnReload">Reload</button>
+            <button id="btnFullscreen">Fullscreen</button>
+        </div>
     </body>
 </html>
