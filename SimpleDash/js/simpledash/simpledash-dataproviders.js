@@ -1,9 +1,24 @@
 function sd_registerDataProviders() {
-    sd.registerDataProvider("as-is", function (id, config) { return config; });
-    sd.registerDataProvider("sqlite3", sd_dp_SQLite3_call);
-    sd.registerDataProvider("google-spreadsheet", sd_dp_GoogleSpreadsheet_call);
+    sd.registerDataProvider("as-is", new SimpleDashAsIs());
+    sd.registerDataProvider("sqlite3", new SimpleDashSQLite3());
+    sd.registerDataProvider("google-spreadsheet", new SimpleDashGoogleSpreadsheet());
     sd.registerDataProvider("jira-issuestatus", sd_dp_JiraIssueStatus_call);
     sd.registerDataProvider("jira-issuelist", sd_dp_JiraIssueList_call);
+}
+
+function SimpleDashAsIs () {
+    this.fetchData = function (id, config, sender, callback) {
+        var result = new SimpleDashChartModel();
+        
+        var series = config["as-is"]["series"];
+        
+        for (var i = 0; i < series.length; i++) {
+            result.add(series[i].id);
+            result.setData(series[i].id, series[i].data);
+        }
+        
+        callback.apply(sender, [result]);
+    }
 }
 
 /**
@@ -12,6 +27,11 @@ function sd_registerDataProviders() {
 function SimpleDashSQLite3 () {
     this.connections = [];
     this.sql = null;
+    
+    this.fetchData = function (id, config, sender, callback) {
+        this.open(id, config);
+        this.series(id, config, sender, callback);
+    }
     
     this.open = function (chartId, config) {
         if (this.sql == null) {
@@ -22,47 +42,46 @@ function SimpleDashSQLite3 () {
         }
     }
     
-    this.series = function (chartId, config) {
+    this.series = function (chartId, config, sender, callback) {
         if (config["sqlite3"]["series"]) {
             for (var seriesName in config["sqlite3"]["series"]) {
-                function updateSeriesGenerator(series) {
+                function updateSeriesGenerator(seriesName, sender, callback) {
                     return function (err, rows) {
                         if (err) {
                             console.log(err);
                         } else {
+                            var result = new SimpleDashChartModel();
+                            var series = result.add(seriesName);
                             var cats = [];
-                            var chart = $("#chart" + chartId).highcharts()
-                            var s = chart.get(series);
                             for (var i = 0; i < rows.length; i++) {
-                                s.addPoint({ name: rows[i]["category"], y: rows[i]["y"]});
+                                
+                                series.push({ name: rows[i]["category"], y: rows[i]["y"]});
                                 cats.push(rows[i]["category"]);
                             }
-                            chart.xAxis[0].setCategories(cats);
+                            
+                            result.setCategories(cats);
+                            callback.apply(sender, [result]);
                         }
                     }
                 };
             
-                this.connections[chartId].all(config["sqlite3"]["series"][seriesName]["sql"], updateSeriesGenerator(seriesName));
+                this.connections[chartId].all(config["sqlite3"]["series"][seriesName]["sql"], updateSeriesGenerator(seriesName, sender, callback));
             }
         }
     }
 }
 
-var sd_dp_SQLite3 = new SimpleDashSQLite3();
-
-function sd_dp_SQLite3_call (id, config) {
-    // 1. open database
-    sd_dp_SQLite3.open(id, config);
-    // 2. if series query present - execute and populate
-    sd_dp_SQLite3.series(id, config);
-    // 4. cleanup
-    return config;
-}
-
 /**
+ * Load data from Google Spreadsheet.
  */
 function SimpleDashGoogleSpreadsheet() {
     var ckey = "google-spreadsheet";
+    
+    this.fetchData = function (id, config, sender, callback) {
+        this.open(id, config);
+        this.series(id, config, sender, callback);        
+    }
+    
     this.connections = [];
     this.open = function (chartId, config) {
         if (!this.connections[chartId]) {
@@ -73,27 +92,30 @@ function SimpleDashGoogleSpreadsheet() {
         }
     };
     
-    this.series = function (chartId, config) {
+    this.series = function (chartId, config, sender, callback) {
         if (config[ckey]["series"]) {
             for (var seriesName in config[ckey]["series"]) {
-                function updateSeriesGenerator(series, nameLabel, yLabel, yType) {
+                function updateSeriesGenerator(series, nameLabel, yLabel, yType, sender, callback) {
                     return function (err, rows) {
                         if (err) {
                             console.log(err);
                         } else {
+                            var result = new SimpleDataChartModel();
+                        
                             var cats = [];
                             var chart = $("#chart" + chartId).highcharts();
-                            var s = chart.get(series);
+                            var s = result.get(series);
                             var yValue;
                             for (var i = 0; i < rows.length; i++) {
                                 yValue = rows[i][yLabel];
                                 if (yType == "float") {
                                     yValue = parseFloat(yValue);
                                 }
-                                s.addPoint({ name: rows[i][nameLabel], y: yValue});
+                                result.push({ name: rows[i][nameLabel], y: yValue});
                                 cats.push(rows[i][nameLabel]);
                             }
-                            chart.xAxis[0].setCategories(cats);
+                            result.setCategories(cats);
+                            callback.apply(sender, [result]);
                         }
                     }
                 };
@@ -103,20 +125,11 @@ function SimpleDashGoogleSpreadsheet() {
                     cfg["sheet"],
                     {},
                     "",
-                    updateSeriesGenerator(seriesName, cfg["name"], cfg["y"], cfg["yType"])
+                    updateSeriesGenerator(seriesName, cfg["name"], cfg["y"], cfg["yType"], sender, callback)
                 );
             }
         }
     };
-}
-
-var sd_dp_GoogleSpreadsheet = new SimpleDashGoogleSpreadsheet();
-
-function sd_dp_GoogleSpreadsheet_call (id, config) {
-    sd_dp_GoogleSpreadsheet.open(id, config);
-    sd_dp_GoogleSpreadsheet.series(id, config);
-
-    return config;
 }
 
 /**
@@ -124,6 +137,9 @@ function sd_dp_GoogleSpreadsheet_call (id, config) {
  */
 function SimpleDashJiraIssueStatus() {
     var ckey = "jira-issuestatus";
+    
+    this.fetchData = function (id, config, sender, callback) {}
+    
     this.series = function (chartId, config) {
         // 1. perform JIRA API request
         var searchRequest = require("url").parse(config[ckey]['baseUrl']);
