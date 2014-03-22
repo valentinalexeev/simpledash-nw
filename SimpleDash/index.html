@@ -13,19 +13,10 @@
         <script language="JavaScript" src="js/datatables/jquery.dataTables.js"></script>
         <script language="JavaScript" src="js/jtable/jquery.jtable.js"></script>
         
-        <script language="JavaScript" src="js/simpledash/simpledash.js"></script>
-        <script language="JavaScript" src="js/simpledash/simpledash-model.js"></script>
-        <script language="JavaScript" src="js/simpledash/simpledash-layouts.js"></script>
-        <script language="JavaScript" src="js/simpledash/simpledash-dataproviders.js"></script>
-        <script language="JavaScript" src="js/simpledash/simpledash-widgets.js"></script>
-        
         <script language="JavaScript">
-            var sd = new SimpleDash();
+            var sd = require("sd-core").sd;
         
             $(document).ready(function() {
-                sd_registerLayouts();
-                sd_registerDataProviders();
-                sd_registerWidgetTypes();
                 sd.go();                
 
                 $("#btnGo").click(function() {
