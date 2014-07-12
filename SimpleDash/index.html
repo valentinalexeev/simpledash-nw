@@ -2,27 +2,28 @@
 <html>
     <head>
         <title>SimpleDash</title>
-        
-        <script language="JavaScript" src="js/jquery/jquery.js"></script>
-        <script language="JavaScript" src="js/jquery/jquery-ui.js"></script>
-        <script language="JavaScript" src="js/highcharts/highcharts.js"></script>
+
+        <script language="JavaScript" src="bower_components/jquery/dist/jquery.js"></script>
+        <script language="JavaScript" src="bower_components/handlebars/handlebars.js"></script>
+        <script language="JavaScript" src="bower_components/highcharts-release/highcharts.js"></script>
+        <script language="JavaScript" src="bower_components/jquery-ui/jquery-ui.js"></script>
+
         <script language="JavaScript" src="js/wookmark/jquery.wookmark.js"></script>
         <script language="JavaScript" src="js/masonry/masonry.pkgd.min.js"></script>
         <script language="JavaScript" src="js/gridster/jquery.gridster.js"></script>
-        <script language="JavaScript" src="js/handlebars/handlebars.js"></script>
-        <script language="JavaScript" src="js/datatables/jquery.dataTables.js"></script>
         <script language="JavaScript" src="js/jtable/jquery.jtable.js"></script>
-        
+
+
         <script language="JavaScript">
             var sd = require("sd-core").sd;
-        
+
             $(document).ready(function() {
-                sd.go();                
+                sd.go();
 
                 $("#btnGo").click(function() {
                     sd.go();
                 });
-                
+
                 $("#btnReload").click(function() {
                     require("nw.gui").Window.get().reload();
                 });
@@ -35,9 +36,8 @@
                 require("nw.gui").Shell.openExternal(url);
             }
         </script>
-        
+
         <link rel="stylesheet" type="text/css" href="css/simpledash.css"/>
-        <link rel="stylesheet" type="text/css" href="css/jquery.dataTables.css"/>
         <link rel="stylesheet" type="text/css" href="css/jquery.gridster.css"/>
         <link rel="stylesheet" type="text/css" href="css/jtable-themes/lightcolor/gray/jtable.css"/>
         <link rel="stylesheet" type="text/css" href="css/jquery-themes/base/jquery-ui.css"/>

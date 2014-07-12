@@ -30,7 +30,6 @@ SimpleDash uses the following excellent work from the community:
 - Wookmark for Pinterest-like layout
 - Highcharts for it's main charting purpose
 - Masonry as yet another pinterest-like layout
-- DataTables to implement table widgets
 
 Limitations
 ===========

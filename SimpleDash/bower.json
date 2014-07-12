@@ -1,0 +1,25 @@
+{
+  "name": "simpledash",
+  "version": "0.0.1",
+  "authors": [
+    "Valentin Alexeev <valentin.alekseev@gmail.com>"
+  ],
+  "description": "SimpleDash",
+  "main": "app.js",
+  "license": "Apache",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "*",
+    "jquery": "*",
+    "jquery-ui": "*",
+    "handlebars": "*",
+    "highcharts-release": "*"
+  }
+}
